@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import requests
+import aiohttp
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import pprint
 import os
 from datetime import timedelta, datetime
@@ -8,6 +10,9 @@ import secrets  # for generating secure session keys
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = secrets.token_hex(16)  # Generate a secure secret key
 app.permanent_session_lifetime = timedelta(hours=1)  # Reduce session lifetime to 1 hour
+
+# Create a ThreadPoolExecutor for running async code
+thread_pool = ThreadPoolExecutor()
 
 HERO_IMAGES = {
     "Black Panther": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1026.png%3Fv%3D1734906793/image.png",
@@ -150,7 +155,55 @@ def main(player_names):
         
     return name_wr_dict
 
+async def get_player_id_async(name, session):
+    async with session.get(f"https://mrapi.org/api/player-id/{name}") as response:
+        if response.status == 200:
+            data = await response.json()
+            return data.get("id")
+    return None
 
+async def get_player_stats_async(player_id, session):
+    async with session.get(f"https://mrapi.org/api/player/{player_id}") as response:
+        if response.status == 200:
+            data = await response.json()
+            return data["hero_stats"]
+    return None
+
+async def process_player_async(name):
+    async with aiohttp.ClientSession() as session:
+        player_id = await get_player_id_async(name, session)
+        if player_id:
+            stats = await get_player_stats_async(player_id, session)
+            return name, stats
+        return name, None
+
+async def main_async(player_names):
+    player_stats = []
+    
+    # Process all players concurrently
+    async with aiohttp.ClientSession() as session:
+        tasks = [process_player_async(name) for name in player_names]
+        results = await asyncio.gather(*tasks)
+        
+        for name, stats in results:
+            if stats:
+                player_stats.append(stats)
+            else:
+                print(f"Could not fetch stats for {name}")
+    
+    ranked_stats = get_ranked_stats(player_stats)
+    target_bans = analyze_ranked_stats(ranked_stats)
+    name_wr_dict = multi_analysis(target_bans)
+        
+    return name_wr_dict
+
+def run_async(coro):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -169,13 +222,10 @@ def index():
         result = None
         highlight = None
         error_messages = []
-        valid_players = []
         
-        # Get player names and check for duplicates
         submitted_names = [request.form.get(f'player{i}', '').strip() for i in range(1, 6)]
-        submitted_names = [name for name in submitted_names if name]  # Remove empty strings
+        submitted_names = [name for name in submitted_names if name]
         
-        # Check for duplicate names
         if len(submitted_names) != len(set(submitted_names)):
             seen = set()
             duplicates = set(name for name in submitted_names if name in seen or seen.add(name))
@@ -187,51 +237,19 @@ def index():
                                 error_messages=error_messages,
                                 hero_images=HERO_IMAGES)
         
-        print(f"Submitted names: {submitted_names}")
-        
         if submitted_names:
-            for name in submitted_names:
-                print(f"Checking player: {name}")
-                try:
-                    player_id = get_player_id(name)
-                    print(f"Attempting to get ID for {name}")
-                    if not player_id:
-                        print(f"Could not get ID for {name}")
-                        error_messages.append(f"Could not fetch ID for {name}")
-                        continue
-                    
-                    print(f"Got ID for {name}: {player_id}")
-                    stats = get_player_stats(player_id)
-                    if not stats:
-                        print(f"Could not get stats for {name}")
-                        error_messages.append(f"Could not fetch stats for {name}")
-                        continue
-                    
-                    print(f"Got stats for {name}")
-                    valid_players.append(name)
-                except Exception as e:
-                    print(f"Error processing {name}: {str(e)}")
-                    error_messages.append(f"Error processing {name}: {str(e)}")
-            
-            print(f"Valid players: {valid_players}")
-            
-            if valid_players:
-                print(f"Running analysis for: {valid_players}")
-                try:
-                    result = main(valid_players)
-                    print(f"Analysis result: {result}")
-                    if result:
-                        highlight = average_winrate(result)
-                        print(f"Highlight: {highlight}")
-                except Exception as e:
-                    print(f"Error in analysis: {str(e)}")
-                    error_messages.append(f"Error in analysis: {str(e)}")
-            else:
-                error_messages.append("No valid players found to analyze")
-                print("No valid players found")
+            try:
+                # Run the async analysis in a separate thread
+                future = thread_pool.submit(run_async, main_async(submitted_names))
+                result = future.result()
+                
+                if result:
+                    highlight = average_winrate(result)
+            except Exception as e:
+                print(f"Error in analysis: {str(e)}")
+                error_messages.append(f"Error in analysis: {str(e)}")
         else:
             error_messages.append("No player names submitted")
-            print("No names submitted")
             
         return render_template('index.html', 
                              player_names=submitted_names,
