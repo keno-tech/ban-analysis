@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import requests
 import pprint
 import os
+from datetime import timedelta, datetime
+import secrets  # for generating secure session keys
 
 app = Flask(__name__, static_url_path='/static')
+app.secret_key = secrets.token_hex(16)  # Generate a secure secret key
+app.permanent_session_lifetime = timedelta(hours=1)  # Reduce session lifetime to 1 hour
 
 player_names = []
 target_bans = []
@@ -158,30 +162,40 @@ def main():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global player_names
-    result = None
-    highlight = None
-    if request.method == 'POST':
-        clear_data()
-        unique_names = set()
-        
-        for i in range(1, 6):
-            player_name = request.form.get(f'player{i}')
-            if player_name and player_name.strip():
-                unique_names.add(player_name.strip())
-        
-        player_names = list(unique_names)
-        
-        if player_names:
-            result = main()
-            if result:
-                highlight = average_winrate(result)
+    # Clear session if it's older than 1 hour
+    if 'created_at' in session:
+        created_at = session['created_at']
+        if (datetime.now() - datetime.fromtimestamp(created_at)).total_seconds() > 3600:  # 1 hour in seconds
+            session.clear()
     
+    # Initialize new session
+    if 'created_at' not in session:
+        session['created_at'] = datetime.now().timestamp()
+        session['player_names'] = []
+    
+    if request.method == 'POST':
+        # Get player names from form
+        player_names = [request.form.get(f'player{i}', '').strip() for i in range(1, 6)]
+        # Store in session
+        session['player_names'] = player_names
+        
+        # Your existing analysis logic here
+        result = main()
+        if result:
+            highlight = average_winrate(result)
+        
+        return render_template('index.html', 
+                             player_names=session['player_names'],
+                             result=result,
+                             highlight=highlight,
+                             hero_images=HERO_IMAGES)
+    
+    # GET request
     return render_template('index.html', 
-                         player_names=player_names, 
-                         result=result, 
-                         highlight=highlight,
-                         hero_images=HERO_IMAGES)
+                         player_names=session['player_names'],
+                         result=None,
+                         highlight=None,
+                         hero_images={})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

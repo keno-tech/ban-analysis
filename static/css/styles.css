@@ -1,0 +1,15 @@
+.snowflake {
+    position: fixed;
+    top: -10px;
+    color: #fff;
+    text-shadow: 0 0 5px #000;
+    user-select: none;
+    z-index: 1000;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh);
+    }
+} 
