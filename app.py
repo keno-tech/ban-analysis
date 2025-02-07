@@ -6,6 +6,7 @@ import pprint
 import os
 from datetime import timedelta, datetime
 import secrets  # for generating secure session keys
+from urllib.parse import quote
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = secrets.token_hex(16)  # Generate a secure secret key
@@ -156,7 +157,9 @@ def main(player_names):
     return name_wr_dict
 
 async def get_player_id_async(name, session):
-    async with session.get(f"https://mrapi.org/api/player-id/{name}") as response:
+    # Replace spaces with + and encode other special characters
+    encoded_name = quote(name.replace(' ', '+'))
+    async with session.get(f"https://mrapi.org/api/player-id/{encoded_name}") as response:
         if response.status == 200:
             data = await response.json()
             return data.get("id")
