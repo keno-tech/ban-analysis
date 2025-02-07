@@ -1,0 +1,268 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: #1a1a1a;
+    color: #ffffff;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 2rem;
+}
+
+.form-container {
+    background: #2d2d2d;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    border: 2px solid #3d3d3d;
+    border-radius: 10px;
+    background: #3d3d3d;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.input-group input::placeholder {
+    color: #888;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus::placeholder {
+    opacity: 0.7;
+    transform: translateX(10px);
+}
+
+/* Animated label */
+.input-group label {
+    position: absolute;
+    left: 15px;
+    top: -10px;
+    background: #2d2d2d;
+    padding: 0 8px;
+    color: #4CAF50;
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+/* Submit button styling */
+button[type="submit"] {
+    width: 100%;
+    padding: 1.2rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(45deg, #45a049, #4CAF50);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+button[type="submit"]:disabled {
+    background: linear-gradient(45deg, #666, #555);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Add some hover effects to the form container */
+.form-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+    transition: all 0.3s ease;
+}
+
+/* Add a subtle animation for the inputs */
+@keyframes focusIn {
+    from { transform: scale(0.95); opacity: 0.8; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.input-group input:focus {
+    animation: focusIn 0.2s ease-out forwards;
+}
+
+.results {
+    margin-top: 2rem;
+    background: #2d2d2d;
+    padding: 2rem;
+    border-radius: 10px;
+}
+
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.hero-card {
+    background: #3d3d3d;
+    padding: 1rem;
+    border-radius: 5px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.hero-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hero-image {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 5px;
+    background-color: transparent;
+}
+
+/* Add specific styling for Black Panther */
+[src*="Black_Panther"] {
+    content: url('https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1026.png%3Fv%3D1734906793/image.png');
+}
+
+.hero-name {
+    color: #4CAF50;
+    font-weight: bold;
+    flex: 1;
+    text-align: left;
+}
+
+.winrate {
+    font-size: 1.2rem;
+}
+
+.key-highlight {
+    background: #3d3d3d;
+    padding: 1.5rem;
+    border-radius: 5px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #4CAF50;
+}
+
+.key-highlight h3 {
+    color: #4CAF50;
+    margin-bottom: 0.5rem;
+}
+
+.key-highlight p {
+    font-size: 1.1rem;
+    line-height: 1.4;
+}
+
+.highlight-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.highlight-image {
+    width: 60px;  /* Slightly larger than the card images */
+    height: 60px;
+}
+
+.key-highlight p {
+    flex: 1;
+}
+
+/* Add these new styles for the loading spinner */
+.spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #ffffff;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    margin-left: 10px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.logo-image {
+    width: 250px; /* Reduced from 300px to 200px */
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.coffee-container {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+    padding: 1rem;
+}
+
+.coffee-button {
+    transition: transform 0.3s ease;
+}
+
+.coffee-button:hover {
+    transform: translateY(-3px);
+}
+
+.coffee-button img {
+    height: 40px;
+    width: auto;
+} 

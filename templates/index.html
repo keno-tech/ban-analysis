@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvel Rivals Ban Analysis</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='marvelrivals.jpeg') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Marvel Rivals Ban Analysis</h1>
+        <div class="logo-container">
+            <img src="https://www.marvelrivals.com/pc/gw/20241128194803/img/home-logo_2be75313.png" class="logo-image" alt="Marvel Rivals">
+        </div>
+        <div class="form-container">
+            <form method="POST" id="analysisForm">
+                {% for i in range(1, 6) %}
+                <div class="input-group">
+                    <label for="player{{ i }}">Player {{ i }}</label>
+                    <input type="text" 
+                           id="player{{ i }}"
+                           name="player{{ i }}" 
+                           placeholder="Enter player {{ i }}'s name..." 
+                           value="{{ player_names[i-1] if player_names and (i-1) < player_names|length else '' }}"
+                           autocomplete="off">
+                </div>
+                {% endfor %}
+                <button type="submit" id="analyzeBtn">
+                    <span id="buttonText">Analyze Team</span>
+                    <div class="spinner" id="loadingSpinner"></div>
+                </button>
+            </form>
+        </div>
+
+        {% if result %}
+        <div class="results">
+            <h2>Analysis Results</h2>
+            {% if highlight %}
+            <div class="key-highlight">
+                <div class="highlight-content">
+                    <h3>Key Highlight</h3>
+                    {% if highlight_hero %}
+                    <img src="{{ hero_images.get(highlight_hero, '') }}" 
+                         alt="{{ highlight_hero }}" 
+                         class="hero-image highlight-image"
+                         onerror="this.style.display='none'">
+                    {% endif %}
+                    <p>{{ highlight }}</p>
+                </div>
+            </div>
+            {% endif %}
+            <div class="hero-stats">
+                {% for hero, winrates in result.items() %}
+                <div class="hero-card">
+                    <div class="hero-info">
+                        <img src="{{ hero_images.get(hero, '') }}" 
+                             alt="{{ hero }}" 
+                             class="hero-image"
+                             onerror="this.style.display='none'">
+                        <div class="hero-name">{{ hero }}</div>
+                    </div>
+                    <div class="winrate">
+                        {% for wr in winrates %}
+                        <div>{{ wr }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="coffee-container">
+            <a href="https://buymeacoffee.com/zlsh" target="_blank" class="coffee-button">
+                <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee">
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            const button = document.getElementById('analyzeBtn');
+            const buttonText = document.getElementById('buttonText');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            button.disabled = true;
+            buttonText.textContent = 'Analyzing...';
+            spinner.style.display = 'block';
+            
+            setTimeout(() => {
+                button.disabled = false;
+                buttonText.textContent = 'Analyze Team';
+                spinner.style.display = 'none';
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
