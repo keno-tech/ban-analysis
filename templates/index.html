@@ -37,8 +37,9 @@
         {% if result %}
         <div class="results">
             <h2>Analysis Results</h2>
-            {% if highlight %}
+            {% if highlight or one_trick_highlight %}
             <div class="key-highlight">
+                {% if highlight %}
                 <div class="highlight-content">
                     <h3>Key Highlight</h3>
                     {% if highlight_hero %}
@@ -49,6 +50,16 @@
                     {% endif %}
                     <p>{{ highlight }}</p>
                 </div>
+                {% endif %}
+                
+                {% if one_trick_highlights %}
+                <div class="highlight-content">
+                    <h3>Player Style Analysis</h3>
+                    {% for highlight in one_trick_highlights %}
+                        <p>{{ highlight }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
             {% endif %}
             <div class="hero-stats">

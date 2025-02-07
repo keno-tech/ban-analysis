@@ -179,6 +179,7 @@ async def process_player_async(name):
 
 async def main_async(player_names):
     player_stats = []
+    one_trick_results = []  # New list to store individual player analyses
     
     # Process all players concurrently
     async with aiohttp.ClientSession() as session:
@@ -188,6 +189,11 @@ async def main_async(player_names):
         for name, stats in results:
             if stats:
                 player_stats.append(stats)
+                # Analyze each player's stats individually for one trick detection
+                ranked_stats = get_ranked_stats([stats])  # Pass single player stats
+                one_trick_status = identify_one_trick_pony(ranked_stats, name)  # Pass player name
+                if one_trick_status:
+                    one_trick_results.append(one_trick_status)
             else:
                 print(f"Could not fetch stats for {name}")
     
@@ -195,7 +201,7 @@ async def main_async(player_names):
     target_bans = analyze_ranked_stats(ranked_stats)
     name_wr_dict = multi_analysis(target_bans)
         
-    return name_wr_dict
+    return name_wr_dict, one_trick_results  # Return both results
 
 def run_async(coro):
     loop = asyncio.new_event_loop()
@@ -204,6 +210,23 @@ def run_async(coro):
         return loop.run_until_complete(coro)
     finally:
         loop.close()
+
+def identify_one_trick_pony(ranked_stats_list, player_name):
+    player_heroes = {}
+    
+    # Analyze stats for this specific player
+    for hero_name, stats in ranked_stats_list:
+        wr = calculate_win_rate(stats)
+        matches = stats['matches']
+        if matches >= 15:  # Only consider heroes with significant matches
+            if wr >= 50:
+                player_heroes[hero_name] = wr
+    
+    # Check if player is a one trick pony (2 or fewer heroes with >50% winrate)
+    if len(player_heroes) <= 2 and len(player_heroes) > 0:
+        heroes_str = ", ".join([f"{hero} ({wr}%)" for hero, wr in player_heroes.items()])
+        return f"{player_name} is a One Trick Pony! Only performs well with: {heroes_str}"
+    return None
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -214,6 +237,7 @@ def index():
                              player_names=[],
                              result=None,
                              highlight=None,
+                             one_trick_highlights=None,  # Changed to plural
                              error_messages=[],
                              hero_images=HERO_IMAGES)
     
@@ -221,6 +245,7 @@ def index():
         print("POST request received")
         result = None
         highlight = None
+        one_trick_highlights = []  # Changed to list
         error_messages = []
         
         submitted_names = [request.form.get(f'player{i}', '').strip() for i in range(1, 6)]
@@ -234,6 +259,7 @@ def index():
                                 player_names=submitted_names,
                                 result=None,
                                 highlight=None,
+                                one_trick_highlights=None,  # Changed to plural
                                 error_messages=error_messages,
                                 hero_images=HERO_IMAGES)
         
@@ -241,10 +267,11 @@ def index():
             try:
                 # Run the async analysis in a separate thread
                 future = thread_pool.submit(run_async, main_async(submitted_names))
-                result = future.result()
+                result, one_trick_highlights = future.result()  # Unpack both return values
                 
                 if result:
                     highlight = average_winrate(result)
+                    
             except Exception as e:
                 print(f"Error in analysis: {str(e)}")
                 error_messages.append(f"Error in analysis: {str(e)}")
@@ -255,6 +282,7 @@ def index():
                              player_names=submitted_names,
                              result=result,
                              highlight=highlight,
+                             one_trick_highlights=one_trick_highlights,  # Changed to plural
                              error_messages=error_messages,
                              hero_images=HERO_IMAGES)
 
