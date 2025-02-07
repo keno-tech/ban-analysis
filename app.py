@@ -9,10 +9,6 @@ app = Flask(__name__, static_url_path='/static')
 app.secret_key = secrets.token_hex(16)  # Generate a secure secret key
 app.permanent_session_lifetime = timedelta(hours=1)  # Reduce session lifetime to 1 hour
 
-player_names = []
-target_bans = []
-one_trick = []
-
 HERO_IMAGES = {
     "Black Panther": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1026.png%3Fv%3D1734906793/image.png",
     "Winter Soldier": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1041.png%3Fv%3D1734906798/image.png",
@@ -73,12 +69,13 @@ def get_ranked_stats(stats_list):
     return ranked_stats_list
 
 def analyze_ranked_stats(ranked_stats_list):
+    target_bans = []
     for hero_name, stats in ranked_stats_list:
         wr = calculate_win_rate(stats)
         matches = stats['matches']
         if matches >= 15 and wr >= 50:
             target_bans.append((hero_name, str(wr) + "%"))
-    return None, None  
+    return target_bans
 
 def calculate_win_rate(stats):
     matches = stats['matches']
@@ -128,17 +125,12 @@ def average_winrate(name_wr_dict):
         return f"There is {num_values } {max_key} player with an average winrate {average:.2f}%"
         
 def clear_data():
-    global player_names, target_bans, one_trick
-    player_names = []
-    target_bans = []
-    one_trick = []
+    pass
 
-def main():
-    global target_bans, player_names
-    # Clear target_bans before processing
+def main(player_names):
     target_bans = []
-
     player_stats = []
+    
     for name in player_names:
         player_id = get_player_id(name)
         if player_id:
@@ -153,7 +145,7 @@ def main():
             print(f"Could not fetch ID for {name}")
     
     ranked_stats = get_ranked_stats(player_stats)
-    analyze_ranked_stats(ranked_stats)
+    target_bans = analyze_ranked_stats(ranked_stats)
     name_wr_dict = multi_analysis(target_bans)
         
     return name_wr_dict
@@ -165,8 +157,6 @@ def index():
     if request.method == 'GET':
         print("GET request received")
         session.clear()
-        session['player_names'] = []
-        clear_data()
         return render_template('index.html', 
                              player_names=[],
                              result=None,
@@ -182,13 +172,11 @@ def index():
         valid_players = []
         
         # Get player names and check for duplicates
-        global player_names
         submitted_names = [request.form.get(f'player{i}', '').strip() for i in range(1, 6)]
         submitted_names = [name for name in submitted_names if name]  # Remove empty strings
         
         # Check for duplicate names
         if len(submitted_names) != len(set(submitted_names)):
-            # Find the duplicate names
             seen = set()
             duplicates = set(name for name in submitted_names if name in seen or seen.add(name))
             error_messages.append(f"Duplicate player names found: {', '.join(duplicates)}. Each player name must be unique.")
@@ -228,10 +216,9 @@ def index():
             print(f"Valid players: {valid_players}")
             
             if valid_players:
-                player_names = valid_players
-                print(f"Running analysis for: {player_names}")
+                print(f"Running analysis for: {valid_players}")
                 try:
-                    result = main()
+                    result = main(valid_players)
                     print(f"Analysis result: {result}")
                     if result:
                         highlight = average_winrate(result)
