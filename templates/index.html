@@ -16,15 +16,15 @@
         </div>
         <div class="form-container">
             <form method="POST" id="analysisForm">
-                {% for i in range(1, 6) %}
+                {% for i in range(1, 7) %}
                 <div class="input-group">
-                    <label for="player{{ i }}">Player {{ i }}</label>
                     <input type="text" 
-                           id="player{{ i }}"
+                           id="player{{ i }}" 
                            name="player{{ i }}" 
                            placeholder="Enter player {{ i }}'s name..." 
                            value="{{ player_names[i-1] if player_names and (i-1) < player_names|length else '' }}"
                            autocomplete="off">
+                    <label for="player{{ i }}">Player {{ i }}</label>
                 </div>
                 {% endfor %}
                 <button type="submit" id="analyzeBtn">
@@ -72,6 +72,14 @@
         </div>
         {% endif %}
 
+        {% if error_messages %}
+            <div class="error-messages">
+                {% for message in error_messages %}
+                    <div class="error-message">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <div class="coffee-container">
             <a href="https://buymeacoffee.com/zlsh" target="_blank" class="coffee-button">
                 <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee">
@@ -85,15 +93,16 @@
             const buttonText = document.getElementById('buttonText');
             const spinner = document.getElementById('loadingSpinner');
             
+            // Disable the button immediately
             button.disabled = true;
             buttonText.textContent = 'Analyzing...';
             spinner.style.display = 'block';
             
-            setTimeout(() => {
-                button.disabled = false;
-                buttonText.textContent = 'Analyze Team';
-                spinner.style.display = 'none';
-            }, 5000);
+            // Enable form resubmission only after the page reloads
+            // Remove the setTimeout since we want the button to stay disabled
+            // until we get results back from the server
+            
+            // The button will be re-enabled when the page reloads with results
         });
     </script>
 </body>

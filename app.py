@@ -162,41 +162,97 @@ def main():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # Clear session if it's older than 1 hour
-    if 'created_at' in session:
-        created_at = session['created_at']
-        if (datetime.now() - datetime.fromtimestamp(created_at)).total_seconds() > 3600:  # 1 hour in seconds
-            session.clear()
-    
-    # Initialize new session
-    if 'created_at' not in session:
-        session['created_at'] = datetime.now().timestamp()
+    if request.method == 'GET':
+        print("GET request received")
+        session.clear()
         session['player_names'] = []
-    
-    if request.method == 'POST':
-        # Get player names from form
-        player_names = [request.form.get(f'player{i}', '').strip() for i in range(1, 6)]
-        # Store in session
-        session['player_names'] = player_names
-        
-        # Your existing analysis logic here
-        result = main()
-        if result:
-            highlight = average_winrate(result)
-        
+        clear_data()
         return render_template('index.html', 
-                             player_names=session['player_names'],
-                             result=result,
-                             highlight=highlight,
+                             player_names=[],
+                             result=None,
+                             highlight=None,
+                             error_messages=[],
                              hero_images=HERO_IMAGES)
     
-    # GET request
-    return render_template('index.html', 
-                         player_names=session['player_names'],
-                         result=None,
-                         highlight=None,
-                         hero_images={})
+    if request.method == 'POST':
+        print("POST request received")
+        result = None
+        highlight = None
+        error_messages = []
+        valid_players = []
+        
+        # Get player names and check for duplicates
+        global player_names
+        submitted_names = [request.form.get(f'player{i}', '').strip() for i in range(1, 6)]
+        submitted_names = [name for name in submitted_names if name]  # Remove empty strings
+        
+        # Check for duplicate names
+        if len(submitted_names) != len(set(submitted_names)):
+            # Find the duplicate names
+            seen = set()
+            duplicates = set(name for name in submitted_names if name in seen or seen.add(name))
+            error_messages.append(f"Duplicate player names found: {', '.join(duplicates)}. Each player name must be unique.")
+            return render_template('index.html', 
+                                player_names=submitted_names,
+                                result=None,
+                                highlight=None,
+                                error_messages=error_messages,
+                                hero_images=HERO_IMAGES)
+        
+        print(f"Submitted names: {submitted_names}")
+        
+        if submitted_names:
+            for name in submitted_names:
+                print(f"Checking player: {name}")
+                try:
+                    player_id = get_player_id(name)
+                    print(f"Attempting to get ID for {name}")
+                    if not player_id:
+                        print(f"Could not get ID for {name}")
+                        error_messages.append(f"Could not fetch ID for {name}")
+                        continue
+                    
+                    print(f"Got ID for {name}: {player_id}")
+                    stats = get_player_stats(player_id)
+                    if not stats:
+                        print(f"Could not get stats for {name}")
+                        error_messages.append(f"Could not fetch stats for {name}")
+                        continue
+                    
+                    print(f"Got stats for {name}")
+                    valid_players.append(name)
+                except Exception as e:
+                    print(f"Error processing {name}: {str(e)}")
+                    error_messages.append(f"Error processing {name}: {str(e)}")
+            
+            print(f"Valid players: {valid_players}")
+            
+            if valid_players:
+                player_names = valid_players
+                print(f"Running analysis for: {player_names}")
+                try:
+                    result = main()
+                    print(f"Analysis result: {result}")
+                    if result:
+                        highlight = average_winrate(result)
+                        print(f"Highlight: {highlight}")
+                except Exception as e:
+                    print(f"Error in analysis: {str(e)}")
+                    error_messages.append(f"Error in analysis: {str(e)}")
+            else:
+                error_messages.append("No valid players found to analyze")
+                print("No valid players found")
+        else:
+            error_messages.append("No player names submitted")
+            print("No names submitted")
+            
+        return render_template('index.html', 
+                             player_names=submitted_names,
+                             result=result,
+                             highlight=highlight,
+                             error_messages=error_messages,
+                             hero_images=HERO_IMAGES)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
