@@ -277,4 +277,25 @@ button[type="submit"]:disabled {
 .coffee-button img {
     height: 40px;
     width: auto;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.clear-button {
+    padding: 10px 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.clear-button:hover {
+    background-color: #c82333;
 } 
