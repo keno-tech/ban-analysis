@@ -21,7 +21,7 @@ HERO_IMAGES = {
     "Spider-Man": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1036.png%3Fv%3D1734906795/image.png",
     "Storm": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1015.png%3Fv%3D1734906791/image.png",
     "Adam Warlock": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1046.png%3Fv%3D1734906798/image.png",
-    "Star Lord": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1043.png%3Fv%3D1734906798/image.png",
+    "Star-Lord": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1043.png%3Fv%3D1734906798/image.png",
     "Moon Knight": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1030.png%3Fv%3D1734906793/image.png",
     "Iron Man": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1034.png%3Fv%3D1734906794/image.png",
     "Hela": "https://imgsvc.trackercdn.com/url/max-width(180),quality(70)/https%3A%2F%2Ftrackercdn.com%2Fcdn%2Ftracker.gg%2Fmarvel-rivals%2Fimages%2Fheroes%2Fsquare%2F1024.png%3Fv%3D1734906792/image.png",
